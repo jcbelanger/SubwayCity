@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Subway City</title>
+	<link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <svg id="game" version="1.1" baseProfile="full" width="100%" height="100%" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+		<filter id="dropshadow">
+			<feGaussianBlur in="SourceAlpha" stdDeviation="2"/> <!-- stdDeviation is how much to blur -->
+			<feOffset dx="5" dy="3" result="offsetblur"/> <!-- how much to offset -->
+			<feComponentTransfer>
+			    <feFuncA type="linear" slope="0.8"/> <!-- slope is the opacity of the shadow -->
+			</feComponentTransfer>
+			<feMerge> 
+				<feMergeNode/> <!-- this contains the offset blurred image -->
+				<feMergeNode in="SourceGraphic"/> <!-- this contains the element that the filter is applied to -->
+			</feMerge>
+		</filter>
+    </svg>	
+    <!-- <script src="https://unpkg.com/@reactivex/rxjs@5.0.0-beta.12/dist/global/Rx.js"></script> -->
+	<script src="index.js" async></script>
+</body>
+</html>
