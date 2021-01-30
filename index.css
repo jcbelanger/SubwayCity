@@ -8,13 +8,13 @@ body {
 
 .station {
 	stroke: #7e786c;
-	stroke-width: 3;
+	stroke-width: 2;
 	fill: #e3ddd5;
 }
 
 .track {
     fill: none;
-    stroke-width: 10;
+    stroke-width: 9;
     stroke-linecap: round;
 }
 
@@ -27,11 +27,38 @@ body {
 	stroke-width: 1;
 }
 
+.label-text,
+.points-first-text,
+.points-others-text {
+	text-anchor: middle;
+	alignment-baseline: central;
+	dominant-baseline: central;
+}
+
 .label-text {
 	fill: #e3ddd5;
 	font: bold 26px "Arial Black",Arial,sans-serif;
 	text-anchor: middle;
-	alignment-baseline: central;
-	dominant-baseline: central;
-    text-shadow: 0 0 2.5px rgba(0,0,0,0.2);
+    text-shadow: 0 0 2.5px rgba(0,0,0,0.4);
+}
+
+
+.points-first-text {
+	fill: #000;
+	font: bold 18px "Arial Black",Arial,sans-serif;
+}
+
+.points-others-text {
+	fill: #000;
+	font: bold 18px "Arial Black",Arial,sans-serif;
+}
+
+.points-first-shape {
+	fill: #cba61e;
+}
+
+.points-others-shape {
+	fill: #e3ddd5;
+	stroke: #ada694;
+    stroke-width: 2;
 }
