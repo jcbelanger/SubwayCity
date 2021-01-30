@@ -15,6 +15,7 @@ body {
 .track {
     fill: none;
     stroke-width: 10;
+    stroke-linecap: round;
 }
 
 .cars {
@@ -24,4 +25,13 @@ body {
 .car {
 	fill: #e3ddd5;
 	stroke-width: 1;
+}
+
+.label-text {
+	fill: #e3ddd5;
+	font: bold 26px "Arial Black",Arial,sans-serif;
+	text-anchor: middle;
+	alignment-baseline: central;
+	dominant-baseline: central;
+    text-shadow: 0 0 2.5px rgba(0,0,0,0.2);
 }

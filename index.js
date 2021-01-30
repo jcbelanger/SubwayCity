@@ -2,7 +2,7 @@ const svgNS = "http://www.w3.org/2000/svg";
 
 const style = {
 	station: {
-		radius: 16,
+		radius: 18,
 		scaleX: 50,
 		scaleY: 50,
 		offsetX: 50,
@@ -16,6 +16,9 @@ const style = {
 		carHeight: 27,
         wheelPadding: 5,
         wheelRadius: 8
+	},
+	label: {
+		radius: 20
 	}
 };
 
@@ -49,8 +52,10 @@ function createGame(svg, game) {
 	for (const subway of game.subways) {
 		const trackSVG = createTrack(subway);
 		const carsSVG = createCars(subway);
+		const labelSVG = createLabel(subway);
 		svg.appendChild(trackSVG);
 		svg.appendChild(carsSVG);
+		svg.appendChild(labelSVG);
 	}
 
 
@@ -77,6 +82,37 @@ function createStation(x, y) {
 	stationCircle.setAttribute("cy", stationY);
 	stationCircle.setAttribute("r", style.station.radius);
 	return stationCircle;
+}
+
+function createLabel(subway) {
+	const [carsX, carsY] = subway.cars;
+    const [x, y] = xySVG(carsX - 2, carsY);
+
+    const {radius} = style.label;
+
+	const labelGroup = document.createElementNS(svgNS, "g");
+	const labelCircle = document.createElementNS(svgNS, "circle");
+	const labelText = document.createElementNS(svgNS, "text");
+	const label = document.createTextNode(subway.label);
+
+	labelGroup.classList.add("label-group");
+	labelCircle.classList.add("label-circle");
+	labelText.classList.add("label-text");
+
+	labelText.setAttribute("x", x);
+	labelText.setAttribute("y", y);
+
+	labelCircle.setAttribute("r", radius);
+	labelCircle.setAttribute("fill", subway.color);
+	labelCircle.setAttribute("cx", x);
+	labelCircle.setAttribute("cy", y);
+
+
+	labelText.appendChild(label);
+	labelGroup.appendChild(labelCircle);
+	labelGroup.appendChild(labelText);
+
+	return labelGroup;
 }
 
 function createTrack(subway) {
