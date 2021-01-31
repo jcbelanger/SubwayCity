@@ -8,17 +8,29 @@
 </head>
 <body>
     <svg id="game" version="1.1" baseProfile="full" width="100%" height="100%" viewBox="0 0 925 525" xmlns="http://www.w3.org/2000/svg">
-		<filter id="dropshadow">
-			<feGaussianBlur in="SourceAlpha" stdDeviation="2"/> <!-- stdDeviation is how much to blur -->
-			<feOffset dx="6" dy="2" result="offsetblur"/> <!-- how much to offset -->
-			<feComponentTransfer>
-			    <feFuncA type="linear" slope="0.6"/> <!-- slope is the opacity of the shadow -->
-			</feComponentTransfer>
-			<feMerge> 
-				<feMergeNode/> <!-- this contains the offset blurred image -->
-				<feMergeNode in="SourceGraphic"/> <!-- this contains the element that the filter is applied to -->
-			</feMerge>
-		</filter>
+		<defs>
+			<filter id="label-group-hover" x="-100%" y="-100%" width="300%" height="300%">
+			    <feBlend in="SourceGraphic" mode="hard-light" />
+			</filter>
+
+			<filter id="label-circle-hover" x="-100%" y="-100%" width="300%" height="300%">
+				<feGaussianBlur result="blurOut" in="offOut" stdDeviation="3" />
+			    <feBlend in="SourceGraphic" in2="blurOut" mode="hard-light" />
+			</filter>
+
+			<filter id="subway-drop-shadow">
+				<feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+				<feOffset dx="4" dy="2" result="offsetblur"/>
+				<feComponentTransfer>
+					<feFuncA type="linear" slope="0.4"/>
+				</feComponentTransfer>
+				<feMerge> 
+					<feMergeNode/>
+					<feMergeNode in="SourceGraphic"/>
+				</feMerge>
+			</filter>
+		</defs>
+
     </svg>	
     <!-- <script src="https://unpkg.com/@reactivex/rxjs@5.0.0-beta.12/dist/global/Rx.js"></script> -->
 	<script src="index.js" async></script>

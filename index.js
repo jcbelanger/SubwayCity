@@ -123,16 +123,29 @@ class Game {
 			const carsSVG = this.createCars(subway);
 			const labelSVG = this.createLabel(subway);
 			const pointsSVG = this.createPoints(subway);
-			svg.appendChild(trackSVG);
-			svg.appendChild(carsSVG);
-			svg.appendChild(labelSVG);
-			svg.appendChild(pointsSVG);
+
+		    const subwayGroup = document.createElementNS(svgNS, "g");
+		    subwayGroup.classList.add("subway-group");
+			subwayGroup.appendChild(trackSVG);
+			subwayGroup.appendChild(carsSVG);
+			subwayGroup.appendChild(labelSVG);
+			subwayGroup.appendChild(pointsSVG);
+
+			for (const [x, y] of subway.stations) {
+				const stationSVG = this.createStation(x, y);
+				subwayGroup.appendChild(stationSVG);
+			}
+
+			svg.appendChild(subwayGroup);
 		}
 
+		const stationsGroup = document.createElementNS(svgNS, "g");
+		stationsGroup.classList.add("stations-group");
 		for (const [id, [x, y]] of this.stationIdStationPosMap) {
 			const stationSVG = this.createStation(x, y);
-			svg.appendChild(stationSVG);
+			stationsGroup.appendChild(stationSVG);
 		}
+		svg.appendChild(stationsGroup);
 	}
 
 	xySVG(x, y) {
@@ -288,11 +301,6 @@ class Game {
 
 	createTrack(subway) {
 		const stationSubways = subway.stationIds.map(x => this.stationSubwayIds(x));
-        
-        const points = [ 
-            this.trackStart(subway),
-            this.xySVG(...subway.stations[0])
-		];
 
 		const {
 			station: {
@@ -303,6 +311,13 @@ class Game {
 				maxGap
 			}
 		} = this.style;
+
+        const points = [ 
+            this.trackStart(subway),
+            this.xySVG(...subway.stations[0])
+		];
+
+		const dist = ([x1, y1], [x2, y2]) => Math.sqrt((x1 - x2)**2 + (y1 - y2)**2);
 
 		const lastIx = subway.stationIds.length - 1;
         for (let i = 0; i < lastIx; i++) {
@@ -371,25 +386,41 @@ class Game {
             const edgePrevX = firstEdgePrevX + perpRun  * (edgeIx + 0.5) * edgeLength;
             const edgePrevY = firstEdgePrevY + perpRise * (edgeIx + 0.5) * edgeLength;
 
-            points.push([edgePrevX, edgePrevY]);
-            points.push([edgeNextX, edgeNextY]);
+            const pointA = [edgePrevX, edgePrevY];
+            const pointB = [edgeNextX, edgeNextY];
+            points.push(pointA);
+            points.push(pointB);
 
             if (nextIx == lastIx && trackOverlaps.length > 1) {
-            	points.push([nextX, nextY]);
+            	const pointC = [nextX, nextY];
+            	points.push(pointC);
             }
         }
 		
 		const trackPoints = points
 			.map(x => x.join(","))
 			.join(" ");
+		    
 
+		const trackBackgroundPolyLine = document.createElementNS(svgNS, "polyline");
+		trackBackgroundPolyLine.classList.add("track-background-polyline");
+		trackBackgroundPolyLine.setAttribute("points", points);
+		trackBackgroundPolyLine.setAttribute("stroke", "none");
+		trackBackgroundPolyLine.setAttribute("stroke-width", trackStrokeWidth);
+		
 		const trackPolyLine = document.createElementNS(svgNS, "polyline");
 		trackPolyLine.classList.add("track-polyline");
 		trackPolyLine.setAttribute("points", points);
 		trackPolyLine.setAttribute("stroke", subway.color);
 		trackPolyLine.setAttribute("stroke-width", trackStrokeWidth);
 
-		return trackPolyLine;
+		const trackGroup = document.createElementNS(svgNS, "g");
+		trackGroup.classList.add("track-group");
+		trackGroup.appendChild(trackBackgroundPolyLine);
+		trackGroup.appendChild(trackPolyLine);
+
+
+		return trackGroup;
 	}
 
 	trackStart(subway) {

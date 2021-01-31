@@ -11,6 +11,45 @@ body {
 	stroke-width: 4;
 }
 
+.track-polyline {
+    stroke-dashoffset: 0;
+}
+
+.subway-group:hover * {
+	transition: all 0.1s ease-in;
+}
+
+.subway-group:hover .track-polyline, 
+.subway-group:hover .track-background-polyline {
+	stroke-width: 12;
+}
+
+.subway-group:hover .track-polyline {
+	stroke-dasharray: 5 15;
+	animation: dash 2s linear infinite;
+}
+
+.label-group {
+	transition: filter 1s ease-out;
+}
+
+.subway-group:hover .label-group {
+	filter: url(#label-group-hover);
+}
+
+.subway-group:hover .label-circle {
+	filter: url(#label-circle-hover);
+}
+
+@keyframes dash {
+	from {
+    	stroke-dashoffset: 20;
+	}
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
 .station-circle {
 	stroke: #7e786c;
 	fill: #e3ddd5;
@@ -20,13 +59,20 @@ body {
 	fill: none;
 }
 
-.track-polyline {
+.track-polyline,
+.track-background-polyline {
     fill: none;
     stroke-linecap: round;
 }
 
+
+.track-background-polyline {
+    stroke-opacity: 0%;
+    stroke: #beb9b3;
+}
+
 .cars-group {
-	filter: url(#dropshadow);
+	filter: url(#subway-drop-shadow);
 }
 
 .car-rect {
