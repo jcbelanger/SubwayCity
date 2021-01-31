@@ -5,7 +5,7 @@ class Game {
 	constructor(subways, svg) {
 	    this.style = {
 			station: {
-				radius: 15,
+				radius: 16,
 				scaleX: 50,
 				scaleY: 50,
 				offsetX: 250,
@@ -45,6 +45,7 @@ class Game {
 		this.stationIdStationPosMap = new Map();
 		this.stationIdSubwayIdMap = new Map();
 		this.subwayIdSubwayDataMap = new Map();
+		this.stationOutEdgeMap = new Map();
 
 		let nextStationId = 0;
 		for (const subway of subways) {
@@ -53,26 +54,45 @@ class Game {
 			subway.stationIds = [];
 
 			for (const [x, y] of subway.stations) {
-				if (this.stationPosStationIdMap.has(x)) {
-					const xStationPosStationIdMap = this.stationPosStationIdMap.get(x);
-					if (xStationPosStationIdMap.has(y)) {
-						const id = xStationPosStationIdMap.get(y);
-						this.stationIdSubwayIdMap.get(id).add(subway.label);
-					} else {
-						xStationPosStationIdMap.set(y, nextStationId);
-						this.stationIdStationPosMap.set(nextStationId, [x, y]);
-						this.stationIdSubwayIdMap.set(nextStationId, new Set([subway.label]));
-						nextStationId++;
-					}
-				} else {
-					this.stationPosStationIdMap.set(x, new Map([[y, nextStationId]]));
-					this.stationIdStationPosMap.set(nextStationId, [x, y]);
-					this.stationIdSubwayIdMap.set(nextStationId, new Set([subway.label]));
+
+				if (!this.stationPosStationIdMap.has(x)) {
+				    this.stationPosStationIdMap.set(x, new Map());
+				}
+
+				const xMap = this.stationPosStationIdMap.get(x);
+				if (!xMap.has(y)) {
+					xMap.set(y, nextStationId);
+				    this.stationIdStationPosMap.set(nextStationId, [x, y]);
 					nextStationId++;
 				}
 
-				const stationId = this.stationPosStationIdMap.get(x).get(y);
+				const stationId = xMap.get(y);
 				subway.stationIds.push(stationId);
+				
+				if (!this.stationIdSubwayIdMap.has(stationId)) {
+					this.stationIdSubwayIdMap.set(stationId, new Set());
+				}
+
+				const subwaySet = this.stationIdSubwayIdMap.get(stationId);
+                subwaySet.add(subway.label);
+
+			}
+
+			for (let i = 0; i < subway.stationIds.length - 1; i++) {
+				const srcStationId = subway.stationIds[i];
+				const dstStationId = subway.stationIds[i + 1];
+				
+				if (!this.stationOutEdgeMap.has(srcStationId)) {
+				    this.stationOutEdgeMap.set(srcStationId, new Map());
+				}
+
+                const srcOutEdges = this.stationOutEdgeMap.get(srcStationId);
+                if (!srcOutEdges.has(dstStationId)) {
+                	srcOutEdges.set(dstStationId, new Set());
+                }
+
+                const dstLabels = srcOutEdges.get(dstStationId);
+                dstLabels.add(subway.label);
 			}
 		}
 	}
@@ -244,17 +264,32 @@ class Game {
             this.xySVG(...subway.stations[0])
 		];
 
-        for (let i = 0; i < stationSubways.length - 1; i++) {
+		const lastIx = subway.stationIds.length - 1;
+        for (let i = 0; i < lastIx; i++) {
             const [prevIx, nextIx] = [i, i + 1];
 
-        	const prevSubways = stationSubways[prevIx];
-        	const nextSubways = stationSubways[nextIx];
-        	const intersect = [...prevSubways].filter(x => nextSubways.has(x));
+
+        	const prevStationId = subway.stationIds[prevIx];
+        	const nextStationId = subway.stationIds[nextIx];
+
+        	const prevSubways = this.stationSubwayIds(prevStationId);
+        	const nextSubways = this.stationSubwayIds(nextStationId);
+
+            const outEdges = this.stationOutEdgeMap.get(prevStationId).get(nextStationId);
+
+            let inEdges = [];
+            if (this.stationOutEdgeMap.has(nextStationId)) {
+            	const nextOutEdges = this.stationOutEdgeMap.get(nextStationId);
+            	if (nextOutEdges.has(prevStationId)) {
+            		inEdges = nextOutEdges.get(prevStationId);
+            	}
+            }
+
+            const trackOverlaps = [...inEdges, ...outEdges];
 
         	// Must sort to guarantee the direction does not flip the offset calculation.
-            const edgeDirection = Math.sign(subway.stationIds[nextIx] - subway.stationIds[prevIx]);
-            const after = intersect.sort((a, b) => edgeDirection * (a - b));
-        	const edgeIx = intersect
+            const edgeDirection = Math.sign(nextStationId - prevStationId);
+        	const edgeIx = trackOverlaps
 				.sort((a, b) => edgeDirection * a.localeCompare(b))
 				.indexOf(subway.label);
 
@@ -282,7 +317,7 @@ class Game {
 
             const trackStrokeWidth = 9;
             const secondaryAxislength = 2 * this.style.station.radius;
-            const edgeLength = secondaryAxislength / intersect.length;
+            const edgeLength = secondaryAxislength / trackOverlaps.length;
 
             const firstEdgeNextX = nextX - perpRun  * secondaryAxislength / 2;
             const firstEdgeNextY = nextY - perpRise * secondaryAxislength / 2;
@@ -296,6 +331,10 @@ class Game {
 
             points.push([edgePrevX, edgePrevY]);
             points.push([edgeNextX, edgeNextY]);
+
+            if (nextIx == lastIx && trackOverlaps.length > 1) {
+            	points.push([nextX, nextY]);
+            }
         }
 		
 		const trackPoints = points
