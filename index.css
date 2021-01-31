@@ -6,24 +6,30 @@ body {
 	background: #beb9b3;
 }
 
-.station {
+.station-circle {
+	stroke-width: 3;
+}
+.station-circle:not(.station-end-circle) {
 	stroke: #7e786c;
-	stroke-width: 2;
 	fill: #e3ddd5;
 /* 	fill: rgba(0,0,0,0); */
 }
 
-.track {
+.station-end-circle {
+	fill: none;
+}
+
+.track-polyline {
     fill: none;
     stroke-width: 9;
     stroke-linecap: round;
 }
 
-.cars {
+.cars-group {
 	filter: url(#dropshadow);
 }
 
-.car {
+.car-rect {
 	fill: #e3ddd5;
 	stroke-width: 1;
 }
@@ -54,11 +60,11 @@ body {
 	font: bold 18px "Arial Black",Arial,sans-serif;
 }
 
-.points-first-shape {
+.points-first-path {
 	fill: #cba61e;
 }
 
-.points-others-shape {
+.points-others-rect {
 	fill: #e3ddd5;
 	stroke: #ada694;
     stroke-width: 2;

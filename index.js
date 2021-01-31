@@ -147,14 +147,28 @@ class Game {
 	createStation(x, y) {
 		const [stationX, stationY] = this.xySVG(x, y);
 		const stationId = this.stationId(x, y);
-		
+		const radius = this.style.station.radius;
+
 		const stationCircle = document.createElementNS(svgNS, "circle");
-		stationCircle.classList.add("station");
-		stationCircle.setAttribute("id", `station-${stationId}`);
+		stationCircle.classList.add("station-circle");
 		stationCircle.setAttribute("cx", stationX);
 		stationCircle.setAttribute("cy", stationY);
-		stationCircle.setAttribute("r", this.style.station.radius);
-		return stationCircle;
+		stationCircle.setAttribute("r", radius);
+
+		const stationGroup = document.createElementNS(svgNS, "g");
+		stationGroup.classList.add("station-group");
+		stationGroup.setAttribute("id", `station-${stationId}`);
+		stationGroup.appendChild(stationCircle);
+
+		const endingSubways = this.subways.filter(subway => subway.stationIds[subway.stationIds.length - 1] == stationId);
+        endingSubways.forEach((subway, ix) => {
+        	const stationEndPath = document.createElementNS(svgNS, "path");
+			stationEndPath.classList.add("station-end-path");
+			stationGroup.appendChild(stationEndPath);
+        });
+        
+
+		return stationGroup;
 	}
 
 	createLabel(subway) {
@@ -214,7 +228,7 @@ class Game {
 			l${firstWidth / 2},${-firstHeight / 2}
 		`;
 		const firstPath = document.createElementNS(svgNS, "path");
-		firstPath.classList.add("points-first-shape");
+		firstPath.classList.add("points-first-path");
 		firstPath.setAttribute("d", firstShape);
 
 		const firstTN = document.createTextNode(first);
@@ -229,12 +243,12 @@ class Game {
 		firstPointsGroup.appendChild(firstPath);
 		firstPointsGroup.appendChild(firstText);
 
-		const othersRect = document.createElementNS(svgNS, "rect");
-		othersRect.classList.add("points-others-shape");
-		othersRect.setAttribute("x", othersX - othersWidth / 2);
-		othersRect.setAttribute("y", othersY - othersHeight / 2);
-		othersRect.setAttribute("width", othersWidth);
-		othersRect.setAttribute("height", othersHeight);
+		const othersPointsRect = document.createElementNS(svgNS, "rect");
+		othersPointsRect.classList.add("points-others-rect");
+		othersPointsRect.setAttribute("x", othersX - othersWidth / 2);
+		othersPointsRect.setAttribute("y", othersY - othersHeight / 2);
+		othersPointsRect.setAttribute("width", othersWidth);
+		othersPointsRect.setAttribute("height", othersHeight);
 
 		const othersTN = document.createTextNode(others);
 		const othersText = document.createElementNS(svgNS, "text");
@@ -245,7 +259,7 @@ class Game {
 
 		const othersPointsGroup = document.createElementNS(svgNS, "g");
 		othersPointsGroup.classList.add("others-points-group");
-		othersPointsGroup.appendChild(othersRect);
+		othersPointsGroup.appendChild(othersPointsRect);
 		othersPointsGroup.appendChild(othersText);
 
 		const pointsGroup = document.createElementNS(svgNS, "g");
@@ -342,7 +356,7 @@ class Game {
 			.join(" ");
 
 		const trackPolyLine = document.createElementNS(svgNS, "polyline");
-		trackPolyLine.classList.add("track");
+		trackPolyLine.classList.add("track-polyline");
 		trackPolyLine.setAttribute("points", points);
 		trackPolyLine.setAttribute("stroke", subway.color);
 		return trackPolyLine;
@@ -400,7 +414,7 @@ class Game {
 		} = this.style.cars;
 
 		const carsGroup = document.createElementNS(svgNS, "g");
-		carsGroup.classList.add("cars");
+		carsGroup.classList.add("cars-group");
 
 		const carsShape = `
 			M${x},${y}
@@ -414,7 +428,7 @@ class Game {
 		`;
 
 		const carsPath = document.createElementNS(svgNS, "path");
-		carsPath.classList.add("cars-shell");
+		carsPath.classList.add("cars-path");
 		carsPath.setAttribute("d", carsShape);
 		carsPath.setAttribute("fill", subway.color);
 		carsGroup.appendChild(carsPath);
@@ -424,7 +438,7 @@ class Game {
 			const carY = y + verticalPadding;
 
 			const carRect = document.createElementNS(svgNS, "rect");
-			carRect.classList.add("car");
+			carRect.classList.add("car-rect");
 			carRect.setAttribute("width", carWidth);
 			carRect.setAttribute("height", carHeight);
 			carRect.setAttribute("x", carX);
@@ -437,7 +451,7 @@ class Game {
 			const wheelY = y + height - wheelInsetRatio * wheelRadius;
 
 			const wheelCircle = document.createElementNS(svgNS, "circle");
-			wheelCircle.classList.add("wheel");
+			wheelCircle.classList.add("wheel-circle");
 			wheelCircle.setAttribute("cx", wheelX);
 			wheelCircle.setAttribute("cy", wheelY);
 			wheelCircle.setAttribute("r", wheelRadius);
