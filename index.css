@@ -6,13 +6,14 @@ body {
 	background: #beb9b3;
 }
 
+.station-end-circle,
 .station-circle {
-	stroke-width: 3;
+	stroke-width: 4;
 }
-.station-circle:not(.station-end-circle) {
+
+.station-circle {
 	stroke: #7e786c;
 	fill: #e3ddd5;
-/* 	fill: rgba(0,0,0,0); */
 }
 
 .station-end-circle {
@@ -21,7 +22,6 @@ body {
 
 .track-polyline {
     fill: none;
-    stroke-width: 9;
     stroke-linecap: round;
 }
 

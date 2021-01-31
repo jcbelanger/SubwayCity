@@ -21,6 +21,10 @@ class Game {
 				wheelRadius: 8,
 				wheelInsetRatio: 0.3
 			},
+			track: {
+				maxGap: 3,
+				trackStrokeWidth: 8
+			},
 			label: {
 				radius: 20
 			},
@@ -162,9 +166,21 @@ class Game {
 
 		const endingSubways = this.subways.filter(subway => subway.stationIds[subway.stationIds.length - 1] == stationId);
         endingSubways.forEach((subway, ix) => {
-        	const stationEndPath = document.createElementNS(svgNS, "path");
-			stationEndPath.classList.add("station-end-path");
-			stationGroup.appendChild(stationEndPath);
+
+            const circum = 2 * Math.PI * radius;
+            const arcLength = circum / endingSubways.length;
+            const arcStart = arcLength * ix;
+
+        	const stationEndCircle = document.createElementNS(svgNS, "circle");
+			stationEndCircle.classList.add("station-end-circle");
+			stationEndCircle.setAttribute("cx", stationX);
+			stationEndCircle.setAttribute("cy", stationY);
+			stationEndCircle.setAttribute("r", radius);
+			stationEndCircle.setAttribute("stroke", subway.color);
+			stationEndCircle.setAttribute("stroke-dasharray", `${arcLength} ${circum - arcLength}`);
+			stationEndCircle.setAttribute("stroke-dashoffset", arcStart);
+
+			stationGroup.appendChild(stationEndCircle);
         });
         
 
@@ -220,7 +236,7 @@ class Game {
 		const [firstX, firstY] = [x + firstOffsetX, y + firstOffsetY];
 		const [othersX, othersY] = [x + othersOffsetX, y + othersOffsetY];
 
-		const firstShape = `
+		const firstPathCommands = `
 			M${firstX},${firstY - firstHeight / 2}
 			l${firstWidth / 2},${firstHeight / 2}
 			l${-firstWidth / 2},${firstHeight / 2}
@@ -229,7 +245,7 @@ class Game {
 		`;
 		const firstPath = document.createElementNS(svgNS, "path");
 		firstPath.classList.add("points-first-path");
-		firstPath.setAttribute("d", firstShape);
+		firstPath.setAttribute("d", firstPathCommands);
 
 		const firstTN = document.createTextNode(first);
 		const firstText = document.createElementNS(svgNS, "text");
@@ -277,6 +293,16 @@ class Game {
             this.trackStart(subway),
             this.xySVG(...subway.stations[0])
 		];
+
+		const {
+			station: {
+				radius
+			},
+			track: {
+				trackStrokeWidth, 
+				maxGap
+			}
+		} = this.style;
 
 		const lastIx = subway.stationIds.length - 1;
         for (let i = 0; i < lastIx; i++) {
@@ -329,9 +355,11 @@ class Game {
 			perpRun /= perpDist;
 			perpRise /= perpDist;
 
-            const trackStrokeWidth = 9;
-            const secondaryAxislength = 2 * this.style.station.radius;
-            const edgeLength = secondaryAxislength / trackOverlaps.length;
+            const maxSecondaryAxislength = 2 * radius;
+            const naturalEdgeLength = maxSecondaryAxislength / trackOverlaps.length;
+            const maxEdgeLength = trackStrokeWidth + maxGap;
+            const edgeLength = Math.min(maxEdgeLength, naturalEdgeLength);
+            const secondaryAxislength = edgeLength * trackOverlaps.length;
 
             const firstEdgeNextX = nextX - perpRun  * secondaryAxislength / 2;
             const firstEdgeNextY = nextY - perpRise * secondaryAxislength / 2;
@@ -359,6 +387,8 @@ class Game {
 		trackPolyLine.classList.add("track-polyline");
 		trackPolyLine.setAttribute("points", points);
 		trackPolyLine.setAttribute("stroke", subway.color);
+		trackPolyLine.setAttribute("stroke-width", trackStrokeWidth);
+
 		return trackPolyLine;
 	}
 
@@ -416,7 +446,7 @@ class Game {
 		const carsGroup = document.createElementNS(svgNS, "g");
 		carsGroup.classList.add("cars-group");
 
-		const carsShape = `
+		const carsPathCommands = `
 			M${x},${y}
 			m${0},${verticalPadding}
 			a${horizontalPadding},${verticalPadding} 0 0,1 ${horizontalPadding},${-verticalPadding}
@@ -429,7 +459,7 @@ class Game {
 
 		const carsPath = document.createElementNS(svgNS, "path");
 		carsPath.classList.add("cars-path");
-		carsPath.setAttribute("d", carsShape);
+		carsPath.setAttribute("d", carsPathCommands);
 		carsPath.setAttribute("fill", subway.color);
 		carsGroup.appendChild(carsPath);
 
