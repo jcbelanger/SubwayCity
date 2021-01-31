@@ -126,10 +126,12 @@ class Game {
 
 		    const subwayGroup = document.createElementNS(svgNS, "g");
 		    subwayGroup.classList.add("subway-group");
+		    subwayGroup.setAttribute("tabindex", 0);
 			subwayGroup.appendChild(trackSVG);
 			subwayGroup.appendChild(carsSVG);
 			subwayGroup.appendChild(labelSVG);
 			subwayGroup.appendChild(pointsSVG);
+			
 
 			for (const [x, y] of subway.stations) {
 				const stationSVG = this.createStation(x, y);

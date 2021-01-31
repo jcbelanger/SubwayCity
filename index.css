@@ -15,16 +15,23 @@ body {
     stroke-dashoffset: 0;
 }
 
-.subway-group:hover * {
-	transition: all 0.1s ease-in;
+.subway-group:focus {
+	outline: none;
+}
+
+.subway-group * {
+	transition: all 0.15s ease-in-out;
 }
 
 .subway-group:hover .track-polyline, 
-.subway-group:hover .track-background-polyline {
+.subway-group:hover .track-background-polyline,
+.subway-group:focus .track-polyline, 
+.subway-group:focus .track-background-polyline {
 	stroke-width: 12;
 }
 
-.subway-group:hover .track-polyline {
+.subway-group:hover .track-polyline,
+.subway-group:focus .track-polyline {
 	stroke-dasharray: 5 15;
 	animation: dash 2s linear infinite;
 }
@@ -33,11 +40,13 @@ body {
 	transition: filter 1s ease-out;
 }
 
-.subway-group:hover .label-group {
+.subway-group:hover .label-group,
+.subway-group:focus .label-group {
 	filter: url(#label-group-hover);
 }
 
-.subway-group:hover .label-circle {
+.subway-group:hover .label-circle, 
+.subway-group:focus .label-circle {
 	filter: url(#label-circle-hover);
 }
 
@@ -86,6 +95,7 @@ body {
 	text-anchor: middle;
 	alignment-baseline: central;
 	dominant-baseline: central;
+    user-select:none;
 }
 
 .label-text {
