@@ -5,7 +5,7 @@ class Game {
 	constructor(subways, svg) {
 	    this.style = {
 			station: {
-				radius: 17,
+				radius: 15,
 				scaleX: 50,
 				scaleY: 50,
 				offsetX: 250,
@@ -126,8 +126,11 @@ class Game {
 
 	createStation(x, y) {
 		const [stationX, stationY] = this.xySVG(x, y);
+		const stationId = this.stationId(x, y);
+		
 		const stationCircle = document.createElementNS(svgNS, "circle");
 		stationCircle.classList.add("station");
+		stationCircle.setAttribute("id", `station-${stationId}`);
 		stationCircle.setAttribute("cx", stationX);
 		stationCircle.setAttribute("cy", stationY);
 		stationCircle.setAttribute("r", this.style.station.radius);
@@ -233,12 +236,71 @@ class Game {
 		return pointsGroup;
 	}
 
-	createTrack(subway, game) {
-		const trackPoints = subway.stations
-			.map(station => this.xySVG(...station).join(","))
-			.join(" ");
+	createTrack(subway) {
+		const stationSubways = subway.stationIds.map(x => this.stationSubwayIds(x));
+        
+        const points = [ 
+            this.trackStart(subway),
+            this.xySVG(...subway.stations[0])
+		];
 
-		const points = this.trackStart(subway).join(",") + " " + trackPoints
+        for (let i = 0; i < stationSubways.length - 1; i++) {
+            const [prevIx, nextIx] = [i, i + 1];
+
+        	const prevSubways = stationSubways[prevIx];
+        	const nextSubways = stationSubways[nextIx];
+        	const intersect = [...prevSubways].filter(x => nextSubways.has(x));
+
+        	// Must sort to guarantee the direction does not flip the offset calculation.
+            const edgeDirection = Math.sign(subway.stationIds[nextIx] - subway.stationIds[prevIx]);
+            const after = intersect.sort((a, b) => edgeDirection * (a - b));
+        	const edgeIx = intersect
+				.sort((a, b) => edgeDirection * a.localeCompare(b))
+				.indexOf(subway.label);
+
+            const [prevX, prevY] = this.xySVG(...subway.stations[prevIx]);
+            const [nextX, nextY] = this.xySVG(...subway.stations[nextIx]);
+
+
+        	// We offset tracks with the same start and end station to prevent overlap.
+        	// Offset occurs along the perpinduclar axis to the track's edge.
+            const rise = prevY - nextY;
+            const run = prevX - nextX;
+            
+            let perpRise, perpRun;
+            if (rise == 0 || run == 0) {
+                perpRise = run;
+                perpRun = rise;
+            } else {
+            	perpRise = -run;
+            	perpRun = rise;
+            }
+
+			const perpDist = Math.sqrt(rise * rise + run * run);
+			perpRun /= perpDist;
+			perpRise /= perpDist;
+
+            const trackStrokeWidth = 9;
+            const secondaryAxislength = 2 * this.style.station.radius;
+            const edgeLength = secondaryAxislength / intersect.length;
+
+            const firstEdgeNextX = nextX - perpRun  * secondaryAxislength / 2;
+            const firstEdgeNextY = nextY - perpRise * secondaryAxislength / 2;
+            const firstEdgePrevX = prevX - perpRun  * secondaryAxislength / 2;
+            const firstEdgePrevY = prevY - perpRise * secondaryAxislength / 2;
+
+            const edgeNextX = firstEdgeNextX + perpRun  * (edgeIx + 0.5) * edgeLength;
+            const edgeNextY = firstEdgeNextY + perpRise * (edgeIx + 0.5) * edgeLength;
+            const edgePrevX = firstEdgePrevX + perpRun  * (edgeIx + 0.5) * edgeLength;
+            const edgePrevY = firstEdgePrevY + perpRise * (edgeIx + 0.5) * edgeLength;
+
+            points.push([edgePrevX, edgePrevY]);
+            points.push([edgeNextX, edgeNextY]);
+        }
+		
+		const trackPoints = points
+			.map(x => x.join(","))
+			.join(" ");
 
 		const trackPolyLine = document.createElementNS(svgNS, "polyline");
 		trackPolyLine.classList.add("track");
@@ -248,8 +310,17 @@ class Game {
 	}
 
 	trackStart(subway) {
-		const {x, y, width, height} = this.carsDim(subway);
-		return [x + width / 2, y + height / 2];
+		const {
+			x,
+			y,
+			width,
+			height
+		} = this.carsDim(subway);
+
+		return [
+		    x + width / 2,
+		    y + height / 2
+		];
 	}
 
 	carsDim(subway) {
